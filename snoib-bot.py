@@ -71,7 +71,7 @@ class SnoibBot(Client):
 
         response = self.responses[winner][random.randint(0, len(self.responses[winner]) - 1)]
 
-        #response = "test"
+        #response = 'test'
 
         return response
 
@@ -81,9 +81,9 @@ class SnoibBot(Client):
 
         response = None
 
-        if f"<@!{self.user.id}" in message.content:
+        if f'<@!{self.user.id}' in message.content:
             self._logger.info('User has dared to mention the all-knowing Snoib bot! Smite them!')
-            response = self.responses["mentioned"][random.randint(0, len(self.responses["mentioned"]) - 1)]
+            response = self.responses['mentioned'][random.randint(0, len(self.responses['mentioned']) - 1)]
 
         elif message.channel.id == self._channel_id:
             self._logger.info('Received message from {0}: {1}, classifying it.'.format(message.author.name, message.content))
