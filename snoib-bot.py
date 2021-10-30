@@ -31,6 +31,24 @@ class SnoibBot(Client):
         self._logger.addHandler(sh)
         self._logger.addHandler(fh)
 
+        self.load_classifications('classifications.json')
+        self.load_responses('responses.json')
+
+
+    def load_classifications(self, name):
+        if os.path.exists(name):
+            with open(name, 'r') as f:
+                self.classifications = json.load(f)
+        else:
+            raise RuntimeError(f'{name} does not exist!')
+
+    def load_responses(self, name):
+        if os.path.exists(name):
+            with open(name, 'r') as f:
+                self.responses = json.load(f)
+        else:
+            raise RuntimeError(f'{name} does not exist!')
+
     def count_words(self, msg, list_):
         '''
         Returns the number of times all words from the list list_ shows up in the message msg
@@ -40,14 +58,24 @@ class SnoibBot(Client):
 
     def classify(self, message):
         msg = message.content
-        print(msg)
 
-        response = "test"
+        scores = {}
+
+        self._logger.debug('Message classification:')
+        for c in self.classifications:
+            scores[c] = self.count_words(msg, c)
+            self._logger.debug(f'\t{c} points: {scores[c]}')
+
+        winner = max(scores, key=scores.get)
+        self._logger.debug(f'{winner} wins!')
+
+        response = self.responses[winner][random.randint(0, len(self.responses[winner]) - 1)]
+
+        #response = "test"
 
         return response
 
     async def on_message(self, message):
-        print(message)
         if message.author == self.user:
             return
 
@@ -55,11 +83,11 @@ class SnoibBot(Client):
 
         if f"<@!{self.user.id}" in message.content:
             self._logger.info('User has dared to mention the all-knowing Snoib bot! Smite them!')
-            response = mentioned[random.randint(0, len(mentioned) - 1)]
+            response = self.responses["mentioned"][random.randint(0, len(self.responses["mentioned"]) - 1)]
 
         elif message.channel.id == self._channel_id:
             self._logger.info('Received message from {0}: {1}, classifying it.'.format(message.author.name, message.content))
-            response = classify(message)
+            response = self.classify(message)
 
         if response:
             try:
