@@ -4,9 +4,10 @@
 from discord import Client
 from re import findall
 import asyncio
+import json
 import logging
+import os
 import random
-
 
 class SnoibBot(Client):
     def __init__(self, channel_id):
@@ -71,11 +72,25 @@ class SnoibBot(Client):
 
 
 def main():
-    TOKEN = ''
-    CHANNEL_ID = 0
+    if not os.path.exists('secrets.json'):
+        # If the secrets file doesn't exist, make a new one
+        with open('secrets.json', 'w') as f:
+            secrets = {
+                    'token': '',
+                    'channel_id': 0,
+            }
+            json.dump(secrets, f, indent=2)
+        raise RuntimeError('Please fill in secrets.json')
 
-    bot = SnoibBot(CHANNEL_ID)
-    bot.run(TOKEN)
+    secrets = None
+    with open('secrets.json', 'r') as f:
+        secrets = json.load(f)
+
+    if secrets:
+        bot = SnoibBot(secrets['channel_id'])
+        bot.run(secrets['token'])
+    else:
+        raise RuntimeError('Secrets.json failed to load somehow')
 
 
 if __name__ == '__main__':
